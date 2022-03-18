@@ -1,14 +1,34 @@
+require('dotenv').config()
+
 const express = require('express')
 const app = express()
 const expressLayouts = require('express-ejs-layouts')
-const port = 4000 || process.env.PORT
-
+const port =  process.env.PORT  || 3000 
+const indexRouter = require('./routes/index')
 
 app.set('view engine', 'ejs')
 app.set('views', __dirname + '/views')
-app.set('layouts', 'layouts/layout')
+app.set('layout', 'layouts/layout')
 app.use(expressLayouts)
 app.use(express.static('public'))
+app.use('/', indexRouter)
+
+const mongo = require('mongoose')
+
+const db = mongo.connection
+db.on('error', (error) => console.log(error))
+db.once('open', () => {console.log("connected to database")})
 
 
-app.listen(port)
+mongo.connect(process.env.DATABASE_URL)
+.then(()=>{
+    app.listen(port, (error) =>{
+        !error?
+        console.log(`The server has started on port ${port}`)
+        :
+        null;
+    })
+}).catch(error => {throw new Error('could not connect to database')})
+
+
+
